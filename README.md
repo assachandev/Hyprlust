@@ -36,12 +36,6 @@ bash install.sh
 
 &nbsp;
 
-## What's Included
-
-See [FEATURES.md](FEATURES.md) for the full breakdown of every keybind, tool, and feature.
-
-&nbsp;
-
 ## Core Stack
 
 | Category | Tool |
