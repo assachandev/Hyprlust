@@ -193,7 +193,8 @@ enable_services() {
 # ──────────────────────────────────────────────
 copy_dotfiles() {
     info "Backing up existing ~/.config entries..."
-    local backup_dir="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
+    local backup_dir
+    backup_dir="$HOME/.config-backup-$(date +%Y%m%d_%H%M%S)"
 
     # Only back up folders we are about to overwrite
     local dirs=(
