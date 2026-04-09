@@ -1,0 +1,92 @@
+/* Minimal App Launcher */
+
+configuration {
+    modi:               "drun";
+    show-icons:         true;
+    drun-display-format: "{name}";
+    hover-select:       true;
+    me-select-entry:    "MouseSecondary";
+    me-accept-entry:    "MousePrimary";
+    font:               "JetBrainsMono Nerd Font 11";
+}
+
+/* Load wallust colors */
+@theme "~/.config/rofi/wallust/colors-rofi.rasi"
+
+* {
+    text-color:     @foreground;
+    border-color:   @selected;
+    background-alt: @selected-active-background;
+    selected:       @selected-urgent-background;
+    text-selected:  @background;
+}
+
+window {
+    width:            400px;
+    border:           2px;
+    border-radius:    14px;
+    background-color: @background;
+    location:         center;
+    anchor:           center;
+}
+
+mainbox {
+    padding:          8px;
+    orientation:      vertical;
+    children:         [ "inputbar", "listview" ];
+    background-color: transparent;
+}
+
+inputbar {
+    padding:          10px 12px;
+    margin:           0 0 6px 0;
+    border-radius:    10px;
+    background-color: @background-alt;
+    children:         [ "prompt", "entry" ];
+}
+
+prompt {
+    padding:          0 8px 0 0;
+    text-color:       @selected;
+    background-color: transparent;
+}
+
+entry {
+    background-color: transparent;
+    text-color:       @foreground;
+    cursor:           text;
+    placeholder:      "Search apps...";
+    placeholder-color: @foreground;
+}
+
+listview {
+    columns:          1;
+    lines:            8;
+    scrollbar:        false;
+    spacing:          2px;
+    background-color: transparent;
+}
+
+element {
+    padding:          8px 10px;
+    border-radius:    8px;
+    spacing:          10px;
+    background-color: transparent;
+    cursor:           pointer;
+}
+
+element selected.normal {
+    background-color: @selected;
+    text-color:       @text-selected;
+}
+
+element-icon {
+    size:             22px;
+    background-color: transparent;
+}
+
+element-text {
+    background-color: transparent;
+    text-color:       inherit;
+    vertical-align:   0.5;
+}
