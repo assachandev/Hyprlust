@@ -1,0 +1,122 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─────────────────────────────────────────────────────────────
+  #  Lint — shellcheck install.sh
+  # ─────────────────────────────────────────────────────────────
+  lint:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck install.sh
+
+  # ─────────────────────────────────────────────────────────────
+  #  Dry Run — verify configs copy to correct locations
+  # ─────────────────────────────────────────────────────────────
+  dry-run:
+    name: Dry Run (Arch Linux)
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install base packages
+        run: pacman -Sy --noconfirm bash coreutils git
+
+      - name: Create mock commands
+        run: |
+          # Mock sudo — run commands directly in container
+          printf '#!/bin/bash\n"$@"\n' > /usr/local/bin/sudo
+          chmod +x /usr/local/bin/sudo
+
+          # Mock pacman — skip all installs
+          printf '#!/bin/bash\necho "[MOCK] pacman $*"\n' > /usr/local/bin/pacman
+          chmod +x /usr/local/bin/pacman
+
+          # Mock yay — already installed (skip build)
+          printf '#!/bin/bash\necho "[MOCK] yay $*"\n' > /usr/local/bin/yay
+          chmod +x /usr/local/bin/yay
+
+          # Mock systemctl
+          printf '#!/bin/bash\necho "[MOCK] systemctl $*"\n' > /usr/local/bin/systemctl
+          chmod +x /usr/local/bin/systemctl
+
+          # Mock xdg-user-dirs-update
+          printf '#!/bin/bash\necho "[MOCK] xdg-user-dirs-update"\n' > /usr/local/bin/xdg-user-dirs-update
+          chmod +x /usr/local/bin/xdg-user-dirs-update
+
+          # Create /etc/arch-release so check_arch passes
+          touch /etc/arch-release
+
+      - name: Run install script
+        run: bash install.sh
+
+      - name: Verify configs copied to correct locations
+        run: |
+          errors=0
+
+          check() {
+            if [ -e "$1" ]; then
+              echo "  ✓ $1"
+            else
+              echo "  ✗ MISSING: $1"
+              errors=$((errors + 1))
+            fi
+          }
+
+          echo ""
+          echo "── Hyprland ──────────────────────────────────"
+          check "$HOME/.config/hypr"
+
+          echo ""
+          echo "── Bar & Launcher ────────────────────────────"
+          check "$HOME/.config/waybar"
+          check "$HOME/.config/rofi"
+          check "$HOME/.config/swaync"
+          check "$HOME/.config/wlogout"
+
+          echo ""
+          echo "── Terminal & Tools ──────────────────────────"
+          check "$HOME/.config/kitty"
+          check "$HOME/.config/btop"
+          check "$HOME/.config/fastfetch"
+          check "$HOME/.config/yazi"
+
+          echo ""
+          echo "── Theming ───────────────────────────────────"
+          check "$HOME/.config/wallust"
+          check "$HOME/.config/matugen"
+          check "$HOME/.config/Kvantum"
+          check "$HOME/.config/qt5ct"
+          check "$HOME/.config/qt6ct"
+
+          echo ""
+          echo "── Media ─────────────────────────────────────"
+          check "$HOME/.config/mpv"
+          check "$HOME/.config/mpd"
+
+          echo ""
+          echo "── Directories ───────────────────────────────"
+          check "$HOME/Pictures/wallpapers"
+          check "$HOME/Pictures/Screenshots"
+
+          echo ""
+          if [ "$errors" -gt 0 ]; then
+            echo "FAILED — $errors item(s) missing"
+            exit 1
+          fi
+
+          echo "All configs verified successfully."
